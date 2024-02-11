@@ -61,10 +61,18 @@ class TestController extends Controller
             'parentId.required' => 'Parent ID is required',
             'parentId.integer' => 'Parent ID must be an integer'
         ]);
+
         $order = \App\Models\OrderTable::find($id);
         if ($order) {
             $parent = $request->parentId;
             $order->pid = $parent;
+            if ($parent == $order->id) {
+                return response()->json(
+                    ['message' => 'Parent ID cannot be the same as the ID'],
+                    400
+                );
+            }
+            $order->status = 1;
             $order->save();
             return response()->json(
                 ['message' => 'Order updated successfully'],

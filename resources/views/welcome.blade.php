@@ -45,7 +45,7 @@
 <body>
     <div class="container">
         <table id="table" data-pagination="true" data-search="true" data-use-row-attr-func="true"
-            data-reorderable-rows="true" data-ajax="ajaxRequest">
+            data-ajax="ajaxRequest">
         </table>
     </div>
 
@@ -98,71 +98,62 @@
                 if (columns && columns[0][1].visible) {
                     $table.treegrid({
                         treeColumn: 1,
-                        onChange: function() {
-                            $table.bootstrapTable('resetView')
-                        }
+                        expanderExpandedClass: 'fa-solid fa-caret-down',
+                        expanderCollapsedClass: 'fa-solid fa-caret-right',
                     })
                 }
             },
-            // no records to display
             formatNoMatches: function() {
                 return 'Không có dữ liệu hiển thị'
             },
+
             onReorderRow: function(e, dataDrag, dataDrop) {
+                console.log(e);
                 console.log(dataDrag, dataDrop);
                 // kéo ra ngoài
-                if (dataDrop === null) {
-                    $.ajax({
-                        url: `/api/test/${dataDrag?.id}`,
-                        type: 'PUT',
-                        data: {
-                            parentId: 0
-                        },
-                        success: function(res) {
-                            $table.bootstrapTable('refresh')
-                        },
-                        error: function() {
-                            alert('Có lỗi xảy ra')
-                            $table.bootstrapTable('refresh')
-                        }
-                    })
-                    return
-                }
-                // $.ajax({
-                //     url: `/api/test/${dataDrag?.id}`,
-                //     type: 'PUT',
-                //     data: {
-                //         parentId: dataDrop?.id
-                //     },
-                //     success: function(res) {
-                //         $table.bootstrapTable('refresh')
-                //     },
-                //     error: function() {
-                //         $table.bootstrapTable('refresh')
-                //     }
-                // })
+                $.ajax({
+                    url: `/api/test/${dataDrag?.id}`,
+                    type: 'PUT',
+                    data: {
+                        parentId: dataDrop?.id
+                    },
+                    success: function(res) {
+                        $table.bootstrapTable('refresh')
+                    },
+                    error: function() {
+                        $table.bootstrapTable('refresh')
+                    }
+                })
                 // draw the table again
             }
         })
         $(document).on('click', '.revert', function(e) {
             e.preventDefault();
 
-        let id = $(this).data('id');
-        $.ajax({
-            url: `/api/test/${id}`,
-            type: 'PUT',
-            data: {
-                parentId: 0
-            },
-            success: function(res) {
-                $table.bootstrapTable('refresh')
-            },
-            error: function() {
-                alert('Có lỗi xảy ra')
-                $table.bootstrapTable('refresh')
-            }
+            let id = $(this).data('id');
+            $.ajax({
+                url: `/api/test/${id}`,
+                type: 'PUT',
+                data: {
+                    parentId: 0
+                },
+                success: function(res) {
+                    $table.bootstrapTable('refresh')
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra')
+                    $table.bootstrapTable('refresh')
+                }
+            })
         })
-    })
+        $(document).on('click', '.open', function(e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            console.log(id);
+            console.log('treegrid-' + id);
+            $(`.treegrid-${id}`).treegrid('toggle')
+        })
+        $table.treegrid({});
     });
 
     function ajaxRequest(params) {
@@ -172,16 +163,15 @@
         })
     }
 
+
     function actionFormatter(value, row, index) {
-        if(row.pid === 0) {
-            return ''
-        }
-        return [
-            `<a data-id="${row.id}" class="btn btn-danger btn-sm revert" title="revert">
+        let acction = ''
+        if (row.pid != 0) {
+            acction += `<a data-id="${row.id}" class="btn btn-danger btn-sm revert ml-2" title="revert">
             <i class="fa-solid fa-clock-rotate-left"></i>
             </a>`
-        ].join('')
+        }
+
+        return acction
     }
-
-
 </script>
