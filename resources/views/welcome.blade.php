@@ -1,177 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.22.2/dist/extensions/reorder-rows/bootstrap-table-reorder-rows.css"
-        rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/jquery-treegrid@0.3.0/css/jquery.treegrid.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.22.2/dist/bootstrap-table.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+@extends('layouts.app')
+@section('css')
     <style>
-        /* .has-card-view .treegrid-parent-1 td {
-            background-color: #f8f9fa;
-            padding-left: 20px
+
+        .pos .pos-container {
+            display: block;
         }
 
-        .has-card-view .treegrid-parent-2 td {
-            background-color: #f8f9fa;
-            padding-left: 20px
+        .pos .pos-sidebar .pos-order {
+            display: block;
         }
-
-        .has-card-view .treegrid-parent-3 td {
-            background-color: #f8f9fa;
-            padding-left: 20px
-        } */
-
-        .has-card-view [class^="treegrid-parent-"] td {
-            padding-left: 20px !important;
-        }
-
-
-
-        /* treegrid-parent-* */
-    </style>
-
-</head>
-
-<body>
-    <div class="container">
-        <table id="table" data-pagination="true" data-search="true" data-use-row-attr-func="true"
-            data-ajax="ajaxRequest">
-        </table>
-    </div>
-
-</body>
-
-
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-    crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery-treegrid@0.3.0/js/jquery.treegrid.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.22.2/dist/bootstrap-table.min.js"></script>
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.22.2/dist/extensions/treegrid/bootstrap-table-treegrid.min.js">
-</script>
-<script src="https://cdn.jsdelivr.net/npm/tablednd@1.0.5/dist/jquery.tablednd.min.js"></script>
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.22.2/dist/extensions/reorder-rows/bootstrap-table-reorder-rows.min.js">
-</script>
-<script>
-    $(document).ready(function() {
-        var $table = $('#table')
-        let showCardView = window.innerWidth <= 768
-        $table.bootstrapTable({
-            // cho phép kéo ra ngoài
-            reorderableRows: true,
-            idField: 'id',
-            columns: [{
-                    'field': 'id',
-                    'title': 'id',
-                },
-                {
-                    field: 'name',
-                    title: 'name'
-                },
-                {
-                    field: 'status',
-                    title: 'status',
-                    //   formatter: 'statusFormatter'
-                },
-                {
-                    field: 'action',
-                    title: 'action',
-                    formatter: 'actionFormatter'
-                }
-            ],
-            // cardView: showCardView,
-            treeShowField: 'name',
-            parentIdField: 'pid',
-            onPostBody: function() {
-                var columns = $table.bootstrapTable('getOptions').columns
-                if (columns && columns[0][1].visible) {
-                    $table.treegrid({
-                        treeColumn: 1,
-                        expanderExpandedClass: 'fa-solid fa-caret-down',
-                        expanderCollapsedClass: 'fa-solid fa-caret-right',
-                    })
-                }
-            },
-            formatNoMatches: function() {
-                return 'Không có dữ liệu hiển thị'
-            },
-
-            onReorderRow: function(e, dataDrag, dataDrop) {
-                console.log(e);
-                console.log(dataDrag, dataDrop);
-                // kéo ra ngoài
-                $.ajax({
-                    url: `/api/test/${dataDrag?.id}`,
-                    type: 'PUT',
-                    data: {
-                        parentId: dataDrop?.id
-                    },
-                    success: function(res) {
-                        $table.bootstrapTable('refresh')
-                    },
-                    error: function() {
-                        $table.bootstrapTable('refresh')
-                    }
-                })
-                // draw the table again
+        @media (max-width: 991.98px) {
+            .pos .pos-container, .pos-sidebar {
+                display: block !important;
+                position: relative !important;
             }
-        })
-        $(document).on('click', '.revert', function(e) {
-            e.preventDefault();
-
-            let id = $(this).data('id');
-            $.ajax({
-                url: `/api/test/${id}`,
-                type: 'PUT',
-                data: {
-                    parentId: 0
-                },
-                success: function(res) {
-                    $table.bootstrapTable('refresh')
-                },
-                error: function() {
-                    alert('Có lỗi xảy ra')
-                    $table.bootstrapTable('refresh')
-                }
-            })
-        })
-        $(document).on('click', '.open', function(e) {
-            e.preventDefault();
-            let id = $(this).data('id');
-            console.log(id);
-            console.log('treegrid-' + id);
-            $(`.treegrid-${id}`).treegrid('toggle')
-        })
-        $table.treegrid({});
-    });
-
-    function ajaxRequest(params) {
-        var url = '/api/test'
-        $.get(url + '?' + $.param(params.data)).then(function(res) {
-            params.success(res)
-        })
-    }
-
-
-    function actionFormatter(value, row, index) {
-        let acction = ''
-        if (row.pid != 0) {
-            acction += `<a data-id="${row.id}" class="btn btn-danger btn-sm revert ml-2" title="revert">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            </a>`
         }
 
-        return acction
-    }
-</script>
+    </style>
+@stop
+@section('content')
+    @foreach ($orderTables as $key => $value)
+        <div class="pos card mb-3" data-id="{{ $value['id'] }}" id="{{'pos-'. $value['id']}}" ondrop="drop(event)"
+             ondragover="allowDrop(event)" draggable="true" ondragstart="drag(event)">
+            <div class="pos-container card-body">
+                <div class="pos-sidebar" draggable="false">
+                    <div class="h-100 d-flex flex-column p-0" draggable="false">
+                        <div class="pos-sidebar-body tab-content ps ps--active-y" draggable="false">
+                            <div class="pos-order" data-id="{{$value['id']}}" draggable="false">
+                                <div class="pos-order-product" draggable="false">
+                                    <div class="img" style="background-image: url('assets/img/pos/product-2.jpg')"
+                                         draggable="false"></div>
+                                    <div class="flex-1" draggable="false">
+                                        <div class="h6 mb-1" draggable="false">{{ $value['name'] }}</div>
+                                        <div class="small" draggable="false">$12.99</div>
+                                        <div class="small mb-2" draggable="false">- size: large</div>
+                                    </div>
+                                </div>
+                                <div class="pos-order-price" draggable="false">
+                                    $12.99
+                                </div>
+                                @foreach($value['children'] as $child)
+                                    <div class="pos card mb-3" data-id="{{ $child['id'] }}" id="{{'pos-'. $child['id']}}"
+                                         ondrop="drop(event)" ondragover="allowDrop(event)" draggable="true"
+                                         ondragstart="drag(event)">
+                                        <div class="pos-container card-body">
+                                            <div class="pos-sidebar" draggable="false">
+                                                <div class="h-100 d-flex flex-column p-0" draggable="false">
+                                                    <div class="pos-sidebar-body tab-content ps ps--active-y"
+                                                         draggable="false">
+                                                        <div class="pos-order" data-id="{{$child['id']}}" draggable="false">
+                                                            <div class="pos-order-product" draggable="false">
+                                                                <div class="img"
+                                                                     style="background-image: url('assets/img/pos/product-2.jpg')"
+                                                                     draggable="false"></div>
+                                                                <div class="flex-1" draggable="false">
+                                                                    <div class="h6 mb-1"
+                                                                         draggable="false">{{ $child['name'] }}</div>
+                                                                    <div class="small" draggable="false">$12.99</div>
+                                                                    <div class="small mb-2" draggable="false">- size:
+                                                                        large
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="pos-order-price" draggable="false">
+                                                                $12.99
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-arrow">
+                                            <div class="card-arrow-top-left"></div>
+                                            <div class="card-arrow-top-right"></div>
+                                            <div class="card-arrow-bottom-left"></div>
+                                            <div class="card-arrow-bottom-right"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="card-arrow">
+                <div class="card-arrow-top-left"></div>
+                <div class="card-arrow-top-right"></div>
+                <div class="card-arrow-bottom-left"></div>
+                <div class="card-arrow-bottom-right"></div>
+            </div>
+        </div>
+    @endforeach
+
+@endsection
+@section('js')
+    <script>
+
+        let parentId = null;
+        let childId = null;
+
+        function allowDrop(ev) {
+            // ev.preventDefault();
+            // chỉ cho phép drop vào thẻ div có id là pos-container
+            console.log('ev.target.classname', ev.target.className)
+            if (ev.target.className === 'pos-order') {
+                ev.preventDefault();
+            } else {
+                return false;
+            }
+        }
+
+        function drag(ev) {
+            childId = ev.target.getAttribute('data-id')
+            console.log('parentId', childId)
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            parentId = ev.target.getAttribute('data-id')
+            var data = ev.dataTransfer.getData("text");
+            ev.target.appendChild(document.getElementById(data));
+
+            fetch('/api/order-tables/' + childId, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    parent_id: parentId
+                })
+                // done
+
+            }).then(response => response.json())
+                .then(data => {
+                    console.log('data', data)
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+    </script>
+@stop

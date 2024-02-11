@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('order_tables', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('description');
-            $table->boolean('status')->default(true);
-            $table->bigInteger('pid');
+            $table->bigInteger('parent_id')->nullable();
+            $table->string('description')->nullable();
+            $table->string('image')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

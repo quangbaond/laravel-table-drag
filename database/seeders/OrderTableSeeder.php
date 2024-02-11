@@ -13,12 +13,10 @@ class OrderTableSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i = 0; $i < 10; $i++) {
-            OrderTable::create([
-                'name' => 'title' . $i,
-                'description' => 'description' . $i,
-                'status' => 1,
-                'pid' => 0
+        for ($i = 1; $i <= 10; $i++) {
+            OrderTable::query()->create([
+                'parent_id' => null,
+                'name' => 'Table ' . $i,
             ]);
         }
     }
